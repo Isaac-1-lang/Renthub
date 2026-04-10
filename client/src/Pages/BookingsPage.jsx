@@ -1,79 +1,90 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import BookingDates from "../Components/BookingDates";
 import NoBookings from "../Components/NoBookings";
-import Spinner from '../Components/Spinner';
+import Spinner from "../Components/Spinner";
 import Image from "../Components/Image";
+import { formatRWF } from "../utils/currency";
+
+const STATUS_STYLES = {
+  pending:  { cls: "bg-yellow-100 text-yellow-700", label: "⏳ Pending approval" },
+  accepted: { cls: "bg-green-100 text-green-700",   label: "✅ Confirmed" },
+  rejected: { cls: "bg-red-100 text-red-600",       label: "❌ Declined" },
+};
+
+const PAYMENT_STYLES = {
+  paid:   "bg-green-50 text-green-600",
+  unpaid: "bg-gray-100 text-gray-500",
+};
 
 const BookingsPage = () => {
   const [bookings, setBookings] = useState(null);
-  const [loading,setLoading] = useState(true);
+  const [loading, setLoading]   = useState(true);
 
-  const getBookings = async () => {
-    try {
-      const { data } = await axios.get('/booking/account');
-      setBookings(data);
-      setLoading(false);
-    } catch (error) {
-      console.log('Error: ', error);
-      setLoading(false);
-    }
-  };
   useEffect(() => {
-    getBookings();
-  },[]);
-  
-  if(loading)
-     return <Spinner />
+    axios.get("/booking/account")
+      .then(({ data }) => setBookings(data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <Spinner />;
+
   return (
-    <div className="flex flex-col justify-center items-center w-full px-2">
-      {(bookings && bookings.length > 0) ? (
-        bookings?.map(booking => (
-          <Link
-            to={`/place/${booking.place._id}`}
-            className="flex gap-3 w-full bg-gray-200 rounded-2xl 
-            max-w-[650px] xs:gap-4 md:gap-1"
-            key = {booking._id}
-          >
-            <div className="w-48 sm:w-64 h-32 xs:h-34 sm:h-40">
-              <Image
-                src={booking.place.photos[0]}
-                alt="booking-perview-photo"
-                className="rounded-xl h-full w-full"
-              />
-            </div>
-            <div className="py-1 pr-2 md:ml-4">
-              <h2 className="text-[15px] font-semibold xs:text-[18px] sm:text-xl leading-5 sm:leading-6">{booking.place.title}</h2>
-              <div className="text-md sm:text-xl">
-                <BookingDates
-                  booking={booking}
-                  className="mb-2 mt-2 text-gray-500 text-[15px]"
-                />
-                <div className="flex gap-1 mt-[-5px] items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5 sm:w-8 sm:h-8"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"
-                    />
-                  </svg>
-                  <span className="text-sm sm:text-xl">
-                    Total price: ₹{booking.price?.toLocaleString('en-IN')}
-                  </span>
+    <div className="flex flex-col items-center w-full px-2 gap-4">
+      {bookings && bookings.length > 0 ? (
+        bookings.map(booking => {
+          const statusInfo = STATUS_STYLES[booking.status] || STATUS_STYLES.pending;
+          return (
+            <div key={booking._id}
+              className="w-full max-w-[650px] bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <Link to={`/place/${booking.place._id}`} className="flex gap-3">
+                <div className="w-36 sm:w-48 h-32 shrink-0">
+                  <Image src={booking.place.photos[0]} alt="booking"
+                    className="h-full w-full object-cover" />
                 </div>
+                <div className="py-3 pr-3 flex-1 min-w-0">
+                  <h2 className="font-semibold text-sm sm:text-base leading-tight truncate">
+                    {booking.place.title}
+                  </h2>
+                  <BookingDates booking={booking}
+                    className="mt-1 text-gray-500 text-xs sm:text-sm" />
+                  <div className="mt-1">
+                    <span className="font-bold text-brand text-sm">
+                      {formatRWF(booking.totalPrice || booking.price)}
+                    </span>
+                    {booking.taxAmount > 0 && (
+                      <span className="text-xs text-gray-400 ml-1">
+                        incl. {formatRWF(booking.taxAmount)} VAT
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+
+              {/* Status bar */}
+              <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 bg-gray-50">
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusInfo.cls}`}>
+                  {statusInfo.label}
+                </span>
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${PAYMENT_STYLES[booking.paymentStatus || "unpaid"]}`}>
+                  {booking.paymentStatus === "paid" ? "💳 Paid" : "Unpaid"}
+                </span>
               </div>
+
+              {/* Rejection message */}
+              {booking.status === "rejected" && (
+                <div className="px-3 py-2 bg-red-50 text-xs text-red-500 border-t border-red-100">
+                  Your booking was declined by the landlord. You may book another property.
+                </div>
+              )}
             </div>
-          </Link>
-        )) ) :
-        <NoBookings />}
+          );
+        })
+      ) : (
+        <NoBookings />
+      )}
     </div>
   );
 };

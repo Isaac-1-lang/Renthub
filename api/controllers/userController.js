@@ -14,12 +14,13 @@ const bcryptSalt = bcrypt.genSaltSync(10);
 
 //route to handle new registration for user.
 router.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
     try {
         const newUser = await User.create({
             name,
             email,
             password: bcrypt.hashSync(password, bcryptSalt),
+            role: role === 'landlord' ? 'landlord' : 'guest',
         })
         res.status(201).json(newUser)
     } catch (e) {
@@ -37,7 +38,7 @@ router.post('/login', async (req, res) => {
         const passOk = bcrypt.compareSync(password, user.password);
         if (!passOk)
             return res.status(422).json("Wrong Password");
-        jwt.sign({ email: user.email, id: user._id, name: user.name }, jwtSecret, { expiresIn: '24h' }, (err, token) => {
+        jwt.sign({ email: user.email, id: user._id, name: user.name, role: user.role }, jwtSecret, { expiresIn: '24h' }, (err, token) => {
             if (err)
                 throw err;
             res.cookie('token', token,
@@ -157,7 +158,7 @@ router.post("/auth", async (req, res) => {
                 password: bcrypt.hashSync(password, bcryptSalt),
             })
         }
-        jwt.sign({ email: user.email, id: user._id, name: user.name }, jwtSecret, { expiresIn: '24h' }, (err, token) => {
+        jwt.sign({ email: user.email, id: user._id, name: user.name, role: user.role }, jwtSecret, { expiresIn: '24h' }, (err, token) => {
             if (err)
                 throw err;
             res.cookie('token', token, {

@@ -1,16 +1,16 @@
-import React, { useState, useRef } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Spinner from "../Components/Spinner";
-import GoogleAuth from "../Components/GoogleAuth";
 
 const RegisterPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("guest");
   const [loading, setLoading] = useState(false);
   const confirmPasswordRef = useRef();
   const navigate = useNavigate();
@@ -27,81 +27,75 @@ const RegisterPage = () => {
 
   const registerUser = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      toast.error("Passwords didn't match");
+      confirmPasswordRef.current.focus();
+      return;
+    }
     try {
-      if (password != confirmPassword) {
-        toast.error("Password didn't mactch");
-        confirmPasswordRef.current.focus();
-        return;
-      }
       setLoading(true);
-      const checkEmail = email.toLowerCase();
-      await axios.post("/user/register", { name, email : checkEmail, password });
-      toast.success("Account Created!!");
+      await axios.post("/user/register", { name, email: email.toLowerCase(), password, role });
+      toast.success("Account created!");
       handleRedirect("/login");
     } catch (error) {
-      if (error && error.response.data.code == 11000)
-        return toast.info(`Email Already registered. Try to Login with the same email`);
+      if (error?.response?.data?.code === 11000)
+        toast.info("Email already registered. Try logging in.");
       else
-        return toast.error(
-          "Something Wrong happened at our side!. Try after some time"
-        );
-    }finally{
+        toast.error("Something went wrong. Try again later.");
+    } finally {
       setLoading(false);
     }
   };
 
+  const inputCls = "w-[90%] border py-2 px-3 my-2 rounded-2xl border-gray-300 xs:w-[400px] outline-none focus:border-brand";
+
   return (
     <div className="py-4 grow flex-col items-center">
-      {loading ? (
-        <Spinner />
-      ) : (
+      {loading ? <Spinner /> : (
         <>
-          <h1 className="text-3xl text-center mb-4 font-bold">Register</h1>
+          <h1 className="text-3xl text-center mb-2 font-bold">Create Account</h1>
+          <p className="text-center text-gray-400 text-sm mb-5">Join RentHub Rwanda</p>
+
+          {/* Role selector */}
+          <div className="flex justify-center gap-4 mb-4">
+            {[
+              { value: "guest", label: "🧳 I'm a Guest", desc: "Browse and book properties" },
+              { value: "landlord", label: "🏠 I'm a Landlord", desc: "List and manage properties" },
+            ].map(({ value, label, desc }) => (
+              <button key={value} type="button" onClick={() => setRole(value)}
+                className={`px-5 py-3 rounded-2xl font-semibold border-2 transition-all text-sm flex flex-col items-center gap-0.5 ${
+                  role === value
+                    ? "bg-brand text-white border-brand"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-brand"
+                }`}>
+                <span>{label}</span>
+                <span className={`text-xs font-normal ${role === value ? "text-blue-100" : "text-gray-400"}`}>
+                  {desc}
+                </span>
+              </button>
+            ))}
+          </div>
+
           <form className="flex flex-col items-center justify-center" onSubmit={registerUser}>
-            <input
-              type="text"
-              placeholder="John Doe"
-              className="w-[90%] border py-2 px-3 my-2 rounded-2xl border-gray-300 xs:w-[400px]"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="w-[90%] border py-2 px-3 my-2 rounded-2xl border-gray-300 xs:w-[400px]"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="password"
-              className="w-[90%] border py-2 px-3 my-2 rounded-2xl border-gray-300 xs:w-[400px]"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <input type="password"
-              placeholder="confirm password"
-              className={`w-[90%] border py-2 px-3 my-2 rounded-2xl border-gray-300 xs:w-[400px] ${password.length === 0 && "cursor-not-allowed"}`}
-              value={confirmPassword}
-              disabled={password.length === 0}
+            <input type="text" placeholder="Full name" className={inputCls}
+              value={name} onChange={(e) => setName(e.target.value)} required />
+            <input type="email" placeholder="your@email.com" className={inputCls}
+              value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input type="password" placeholder="Password" className={inputCls}
+              value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input type="password" placeholder="Confirm password"
+              className={`${inputCls} ${password.length === 0 ? "cursor-not-allowed opacity-60" : ""}`}
+              value={confirmPassword} disabled={password.length === 0}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              ref={confirmPasswordRef}
-              required
-            />
-            <button className="bg-pink p-2 text-white rounded-2xl mt-1 hover:scale-95 transition-all w-[90%] xs:max-w-[400px] font-semibold">
-              Register
+              ref={confirmPasswordRef} required />
+
+            <button className="bg-brand p-2 text-white rounded-2xl mt-2 hover:bg-brand-dark hover:scale-95 transition-all w-[90%] xs:max-w-[400px] font-semibold">
+              Register as {role === "landlord" ? "Landlord" : "Guest"}
             </button>
-            <div className="text-center mt-1">
+            <div className="text-center mt-2 text-sm">
               Already a member?{" "}
-              <Link to={"/login"} className="text-pink underline font-medium">
-                login
-              </Link>
+              <Link to="/login" className="text-brand underline font-medium">Login</Link>
             </div>
-            <div className="text-gray-500 my-3">OR</div>
-            <GoogleAuth handleRedirect={handleRedirect} />
           </form>
         </>
       )}

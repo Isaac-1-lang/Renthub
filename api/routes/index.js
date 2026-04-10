@@ -1,67 +1,42 @@
 import express from "express";
 const router = express.Router();
 import userController from "../controllers/userController.js";
-import placeController from "../controllers/placeController.js"
+import placeController from "../controllers/placeController.js";
 import bookingController from "../controllers/bookingController.js";
 import { Place } from "../models/Place.js";
-import imageDownload from "image-downloader";
-import multer from "multer";
-import mime from "mime-types";
-import { uploadToS3 } from "../utils/uploadToS3.js";
 
 router.use('/user', userController);
 router.use('/place', placeController);
 router.use('/booking', bookingController);
 
-const photosMiddleware = multer({ dest: '/tmp' });
-
-//route to get all or filtered places for index page
+// ── GET /places — public, supports search + filters ──────────────────────────
 router.get('/places', async (req, res) => {
     try {
-        const { page = 1, limit = 8, query } = req.query;
+        const { page = 1, limit = 8, query, minPrice, maxPrice, city, perks, propertyType } = req.query;
         let filter = {};
+
         if (query) {
             const regex = new RegExp(query, "i");
-            filter = {
-                $or: [
-                    { title: regex },
-                    { address: regex }
-                ]
-            };
+            filter.$or = [{ title: regex }, { address: regex }, { city: regex }];
         }
-        // Fetch the places based on filter and pagination
+        if (city) filter.city = new RegExp(city, "i");
+        if (minPrice || maxPrice) {
+            filter.price = {};
+            if (minPrice) filter.price.$gte = Number(minPrice);
+            if (maxPrice) filter.price.$lte = Number(maxPrice);
+        }
+        if (propertyType) filter.propertyType = propertyType;
+        if (perks) {
+            const perkList = perks.split(',').map(p => p.trim());
+            filter.perks = { $all: perkList };
+        }
+
         const places = await Place.find(filter)
             .skip((page - 1) * limit)
-            .limit(limit);
+            .limit(Number(limit));
         res.json(places);
     } catch (err) {
         res.status(500).json({ error: err.message });
-    }
-});
-
-
-router.post('/upload', photosMiddleware.array('photos', 50), async (req, res) => {
-    const uploadedFiles = [];
-    for (let i = 0; i < req.files.length; i++) {
-        const { path, originalname, mimetype } = req.files[i];
-        const url = await uploadToS3(path, originalname, mimetype);
-        uploadedFiles.push(url);
-    }
-    res.json(uploadedFiles);
-})
-
-router.post('/upload_by_link', async (req, res) => {
-    try {
-        const { imgLink } = req.body;
-        const newName = 'photo' + Date.now() + '.jpg';
-        await imageDownload.image({
-            url: imgLink,
-            dest: '/tmp/' + newName,
-        });
-        const url = await uploadToS3('/tmp/' + newName, newName, mime.lookup('/tmp/' + newName));
-        res.json(url);
-    } catch (err) {
-        res.json(err);
     }
 });
 

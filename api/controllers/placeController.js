@@ -4,30 +4,29 @@ import {Place} from "../models/Place.js";
 import {allDaysBetweenIntervals} from "../utils/allDays.js";
 import {isLoggedIn} from "../middlewares/userAuth.js";
 
-//route to add place
+//route to add place (landlord only)
 router.post('/', isLoggedIn, async (req, res) => {
     try{
         const userId = req.user.id;
-        const { title, address, addedPhotos, description, perks, maxGuests, extraInfo,price } = req.body;
-        const newPlace = await Place.create({ owner: userId,title, address, photos: addedPhotos, description, perks, extraInfo, maxGuests,price});
+        const { title, address, city, country, propertyType, addedPhotos, description, perks, maxGuests, extraInfo, price } = req.body;
+        const newPlace = await Place.create({ owner: userId, title, address, city, country, propertyType, photos: addedPhotos, description, perks, extraInfo, maxGuests, price });
         res.status(201).json(newPlace);
     }catch(err){
-        res.status(500).json(e.message);
+        res.status(500).json(err.message);
     }
 })
 
 //route to update existing place.
-router.put('/', isLoggedIn,async (req, res) => {
+router.put('/', isLoggedIn, async (req, res) => {
     try{
-        const { id,title, address, addedPhotos, description, perks, maxGuests, extraInfo,price } = req.body;
+        const { id, title, address, city, country, propertyType, addedPhotos, description, perks, maxGuests, extraInfo, price } = req.body;
         const place = await Place.findById(id);
-        place.set({title, address, photos : addedPhotos, description, perks, maxGuests,extraInfo,price});
+        place.set({ title, address, city, country, propertyType, photos: addedPhotos, description, perks, maxGuests, extraInfo, price });
         await place.save();
         res.status(201).json("Place Update Successfully");
     }catch(err){
         res.status(500).json(err.message);
     }
-
 })
 
 //route to add booked dates in place collection
@@ -44,7 +43,7 @@ router.put('/:id', isLoggedIn, async (req,res) => {
 })
 
 //route to delete booked dates in place collection
-router.delete('/:id',isLoggedIn,async(req,res) => {
+router.delete('/:id', isLoggedIn, async(req,res) => {
     try{
         const {id} = req.params;
         const {checkIn,checkOut} = req.body;
@@ -58,8 +57,8 @@ router.delete('/:id',isLoggedIn,async(req,res) => {
     }
 })
 
-//route to get all the added places by the user
-router.get('/account', isLoggedIn ,async (req, res) => {
+//route to get all the added places by the user (landlord dashboard)
+router.get('/account', isLoggedIn, async (req, res) => {
     try{
         const userId = req.user.id;
         const myPlaces = await Place.find({ owner: userId });
@@ -74,7 +73,7 @@ router.delete('/', isLoggedIn, async (req, res) => {
     try{
         const { placeId } = req.body;
         await Place.findByIdAndDelete(placeId);
-        res.status(200).json("Place Successfull Deleted");
+        res.status(200).json("Place Successfully Deleted");
     }catch(err){
         res.status(500).json(err.message);
     }

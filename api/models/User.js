@@ -7,6 +7,11 @@ const userSchema = new mongoose.Schema({
         unique : true,
     },
     password : String,
+    role : {
+        type : String,
+        enum : ['guest', 'landlord'],
+        default : 'guest',
+    },
     bookings : {
         type : [mongoose.Schema.Types.ObjectId],
         ref : 'Bookings',

@@ -6,13 +6,17 @@ export default {
   ],
   theme: {
     extend: {
-      colors:{
-        pink:'#F5385D',
+      colors: {
+        brand: {
+          DEFAULT: '#2563EB',  // Rwanda-inspired blue
+          light:   '#EFF6FF',
+          dark:    '#1D4ED8',
+        },
       },
-      screens:{
-        'xs': '500px',
-        'xxs' : '400px',
-        '2xl' : '1730px'
+      screens: {
+        'xs':  '500px',
+        'xxs': '400px',
+        '2xl': '1730px',
       },
       scale: {
         '102': '1.02',
@@ -21,4 +25,3 @@ export default {
   },
   plugins: [],
 }
-

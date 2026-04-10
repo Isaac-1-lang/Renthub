@@ -2,7 +2,8 @@ import React, { useContext } from 'react';
 import { GoogleLogin } from "@react-oauth/google";
 import { UserContext } from "../Context/userContext";
 import axios from 'axios';
-import {parseJwt} from "../utils/helper";
+import { parseJwt } from "../utils/helper";
+import { toast } from "react-toastify";
 
 const GoogleAuth = ({handleRedirect}) => {
     const {setUser} = useContext(UserContext);

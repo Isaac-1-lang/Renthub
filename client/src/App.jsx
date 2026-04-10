@@ -9,7 +9,9 @@ import { UserContextProvider } from "./Context/userContext";
 import ProfilePage from "./Pages/ProfilePage";
 import SinglePlacePage from "./Pages/SinglePlacePage";
 import AddPlacePage from "./Pages/AddPlacePage";
-import { Slide, ToastContainer, } from "react-toastify";
+import LandlordDashboard from "./Pages/LandlordDashboard";
+import DashboardBookingsPage from "./Pages/DashboardBookingsPage";
+import { Slide, ToastContainer } from "react-toastify";
 
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
 axios.defaults.withCredentials = true;
@@ -17,19 +19,22 @@ axios.defaults.withCredentials = true;
 function App() {
   return (
     <UserContextProvider>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<IndexPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/account" element={<ProfilePage />} />
-            <Route path="/account/:subpage" element={<ProfilePage />} />
-            <Route path="/account/:subpage/:action" element={<ProfilePage />} />
-            <Route path="/account/places/new" element={<AddPlacePage />} />
-            <Route path="/account/places/:id" element={<AddPlacePage />} />
-            <Route path="/place/:id" element={<SinglePlacePage />} />
-          </Route>
-        </Routes>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<IndexPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/account" element={<ProfilePage />} />
+          <Route path="/account/:subpage" element={<ProfilePage />} />
+          <Route path="/account/:subpage/:action" element={<ProfilePage />} />
+          <Route path="/account/places/new" element={<AddPlacePage />} />
+          <Route path="/account/places/:id" element={<AddPlacePage />} />
+          <Route path="/place/:id" element={<SinglePlacePage />} />
+          {/* Landlord dashboard routes */}
+          <Route path="/dashboard" element={<LandlordDashboard />} />
+          <Route path="/dashboard/bookings" element={<DashboardBookingsPage />} />
+        </Route>
+      </Routes>
       <ToastContainer
         position="top-right"
         autoClose={2000}
@@ -41,7 +46,6 @@ function App() {
         draggable
         transition={Slide}
         limit={3}
-        
       />
     </UserContextProvider>
   );

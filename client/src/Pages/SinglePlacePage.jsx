@@ -12,7 +12,7 @@ const PlaceGallery = lazy(() => import("../Components/PlaceGallery"));
 const BookingWidget = lazy(() => import("../Components/BookingWidget"));
 
 const SinglePlacePage = () => {
-  const [place, setPlace] = useState([]);
+  const [place, setPlace] = useState(null);
   const [alreadyBooked, setAlreadyBooked] = useState(false);
   const [showFullExtraInfo, setShowFullExtraInfo] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
@@ -49,7 +49,7 @@ const SinglePlacePage = () => {
   }, []);
 
 
-  if (!loading && place.length === 0 && shouldRender)
+  if (!loading && !place && shouldRender)
     return <NoPlaceFound />;
   return (
     <>

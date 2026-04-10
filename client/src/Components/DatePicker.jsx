@@ -17,7 +17,7 @@ const footer = () => {
   return(
     <div className="text-gray-500 font-semibold overflow-hidden">
       <p className="md:inline mt-3 text-wrap whitespace-normal leading-3">
-        <span className="text-pink xs:inline">*</span>
+        <span className="text-brand xs:inline">*</span>
         Dates in red are either already booked by other
       </p>
       <p className="inline"> visitors or they are past dates.</p>

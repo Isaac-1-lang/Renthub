@@ -13,7 +13,7 @@ import Popover from "../Components/Popover";
 const ProfilePage = () => {
   const [redirect, setRedirect] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { user, setUser } = useContext(UserContext);
+  const { user, setUser, isLandlord } = useContext(UserContext);
 
   let { subpage } = useParams();
   if (subpage === undefined) {
@@ -67,24 +67,22 @@ const ProfilePage = () => {
                       Name : <span className="text-gray-500">{user.name}</span>
                     </h1>
                   </div>
+                  {/* Role badge */}
                   <div className="flex gap-2 items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                      className="w-6 h-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
-                      />
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold capitalize ${
+                      isLandlord ? "bg-brand-light text-brand" : "bg-blue-50 text-blue-600"
+                    }`}>
+                      {isLandlord ? "🏠 Landlord" : "🧳 Guest"}
+                    </span>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                      strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round"
+                        d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                     </svg>
                     <h1 className="text-[20px] font-medium sm:text-[22px]">
-                      Email :{" "}
-                      <span className="text-gray-500">{user.email}</span>
+                      Email : <span className="text-gray-500">{user.email}</span>
                     </h1>
                   </div>
                 </div>
@@ -116,7 +114,13 @@ const ProfilePage = () => {
             </div>
           )}
           {subpage === "bookings" && <BookingsPage />}
-          {subpage === "places" && <PlacesPages />}
+          {subpage === "places" && isLandlord && <PlacesPages />}
+          {subpage === "places" && !isLandlord && (
+            <p className="text-center text-gray-500 mt-8">
+              Only landlords can manage properties.{" "}
+              <a href="/register" className="text-pink underline">Register as a landlord</a>.
+            </p>
+          )}
         </>
       )}
     </div>

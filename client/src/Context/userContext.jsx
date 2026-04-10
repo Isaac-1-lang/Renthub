@@ -3,21 +3,26 @@ import axios from "axios";
 
 export const UserContext = createContext({});
 
-export function UserContextProvider({children}){
-    const [user,setUser] = useState(null);
-    const [ready,setReady] = useState(false);
-    
+export function UserContextProvider({ children }) {
+    const [user, setUser] = useState(null);
+    const [ready, setReady] = useState(false);
+
     useEffect(() => {
-        if(!user){
-            axios.get('/user/profile').then(({data}) => {
+        if (!user) {
+            axios.get('/user/profile').then(({ data }) => {
                 setUser(data);
                 setReady(true);
-            })
+            }).catch(() => {
+                setReady(true);
+            });
         }
-    },[]);
-    return(
-        <UserContext.Provider value={{user,setUser,ready}}>
+    }, []);
+
+    const isLandlord = user?.role === 'landlord';
+
+    return (
+        <UserContext.Provider value={{ user, setUser, ready, isLandlord }}>
             {children}
         </UserContext.Provider>
-    )
+    );
 }

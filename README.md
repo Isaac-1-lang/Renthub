@@ -1,4 +1,4 @@
-# HomeStays
+# RentHub
 
 ## Overview
 
@@ -9,7 +9,7 @@ This project is a full-stack web application developed using MERN stack (MongoDB
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/Vipu97/HomeStays.git
+   git clone https://github.com/Vipu97/RentHub.git
 
    ```
 
@@ -42,11 +42,11 @@ This project is a full-stack web application developed using MERN stack (MongoDB
 
      #### JWT_SECRET= your secret (string)
 
-     #### BUCKET_NAME = your S3 bucket name
+     #### CLOUDINARY_CLOUD_NAME = your Cloudinary cloud name
 
-     #### S3_ACCESS_KEY = your S3 bucket key
+     #### CLOUDINARY_API_KEY = your Cloudinary API key
 
-     #### CS3_SECRET_ACCESS_KEY = your S3 bucket secret access key
+     #### CLOUDINARY_API_SECRET = your Cloudinary API secret
 
      #### CLIENT_URL= http://localhost:5173
 
